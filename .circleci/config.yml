@@ -1,3 +1,10 @@
+version: 2.1
+
+orbs:
+  aws-eks: circleci/aws-eks@1.1.0
+  kubernetes: circleci/kubernetes@0.4.0
+  
+
 commands:
   destroy-cluster:
     description: Destroy EKS Cluster.
@@ -14,8 +21,6 @@ commands:
           command: |
             aws cloudformation delete-stack --stack-name eksctl-devopscapstone-nodegroup-nodegroup --region us-west-2
             aws cloudformation delete-stack --stack-name eksctl-<< parameters.cluster-name >>-cluster --region us-west-2
-
-
 parameters:
   docker_image:
     type: string
@@ -61,13 +66,14 @@ jobs:
             make lint      
 
   # build-and-push-image:
-    # machine: true
-    # steps:
-        #  - checkout
-        #  - run: |
-            # docker build -t elsiedev/sample:latest .
-            # echo $DOCKERHUB_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-            # docker push elsiedev/sample:latest
+  #   machine: true
+  #   steps:
+  #        - checkout
+  #        - run: |
+  #           docker build -t elsiedev/sample:latest .
+  #           echo $DOCKERHUB_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+  #           docker push elsiedev/sample:latest
+
 
   # Creation of Cluster        
   create-cluster:
@@ -103,7 +109,6 @@ jobs:
           node-type: t3.medium
       
    # Test the Cluster               
-     # Test the Cluster               
   test-cluster:
     executor: aws-eks/python3
     parameters:
@@ -120,18 +125,19 @@ jobs:
       - kubernetes/install
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: << parameters.cluster-name >>
-          #aws-region: << parameters.aws-region >>
+          aws-region: << parameters.aws-region >>
       - run:
           command: |
             kubectl get services
             kubectl get pods
-
             kubectl describe pods
             kubectl get nodes
             kubectl get deployment
             kubectl get services -o wide
           name: Test cluster
 
+
+ # Deployment of the application
   create-deployment:
     executor: aws-eks/python3
     parameters:
@@ -139,18 +145,24 @@ jobs:
         description: |
           Name of the EKS cluster
         type: string
+      aws-region:
+        description: |
+          AWS region
+        type: string
+        default: ""
     steps:
       - checkout
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: << parameters.cluster-name >>
           install-kubectl: true
+          aws-region: << parameters.aws-region >>
       - kubernetes/create-or-update-resource:
           get-rollout-status: true
-          resource-file-path: deployments/nginx-deployment.yaml
-          resource-name: deployments/sampleclusters
+          resource-file-path: deployment/nginx-deployment.yaml
+          resource-name: deployment/sampleclusters
           
       - kubernetes/create-or-update-resource:
-          resource-file-path: deployments/app-service.yaml
+          resource-file-path: deployment/app-service.yaml
 
   undeploy-application:
     executor: aws-eks/python3
@@ -171,12 +183,16 @@ jobs:
           aws-region: << parameters.aws-region >>
       - kubernetes/delete-resource:
           resource-types: "deployment,service"
-          label-selector: "app=sample-clusters"
+          label-selector: "app=sampleclusters"
           wait: true
       - run:
           name: Check on pod status
           command: |
             kubectl get pods
+
+
+    # Delete cluster
+
   delete-cluster:
     executor: aws-eks/python3
     steps:
@@ -199,45 +215,39 @@ jobs:
             rmdir eksctl_download
       - aws-eks/delete-cluster:
           cluster-name: sampleclusters
-          aws-region: $AWS_DEFAULT_REGION
+          aws-region: $AWS_REGION
           wait: true  
   
 
 
-orbs:
-  aws-eks: circleci/aws-eks@1.1.0
-  kubernetes: circleci/kubernetes@0.4.0
-  
 
-version: 2.1
 
 workflows:
   deployment:
     jobs:
-      - build
+      # - build
        
 
-      - create-cluster:
-          requires:
-            - build
+      - create-cluster
+          # requires:
+          #   - build
       - test-cluster:
           cluster-name: sampleclusters
+          aws-region: $AWS_REGION
           requires:
             - create-cluster
       - create-deployment:
           cluster-name: sampleclusters
+          aws-region: $AWS_REGION
           requires:
             - test-cluster
 
-      - undeploy-application:
-          cluster-name: sampleclusters
-          aws-region: $AWS_DEFAULT_REGION
-          requires:
-            - create-deployment
+      # - undeploy-application:
+      #     cluster-name: sampleclusters
+      #     aws-region: $AWS_DEFAULT_REGION
+      #     requires:
+      #       - create-deployment
 
-      - delete-cluster:
-          requires:
-            - undeploy-application
-
-      
-
+      # - delete-cluster:
+      #     requires:
+      #       - undeploy-application
