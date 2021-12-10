@@ -103,6 +103,7 @@ jobs:
           node-type: t3.medium
       
    # Test the Cluster               
+     # Test the Cluster               
   test-cluster:
     executor: aws-eks/python3
     parameters:
@@ -110,19 +111,27 @@ jobs:
         description: |
           Name of the EKS cluster
         type: string
+      aws-region:
+        description: |
+          AWS region
+        type: string
+        default: ""
     steps:
       - kubernetes/install
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: << parameters.cluster-name >>
+          aws-region: << parameters.aws-region >>
       - run:
           command: |
             kubectl get services
             kubectl get pods
+
             kubectl describe pods
             kubectl get nodes
             kubectl get deployment
             kubectl get services -o wide
           name: Test cluster
+
   create-deployment:
     executor: aws-eks/python3
     parameters:
