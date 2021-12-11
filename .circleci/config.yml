@@ -217,8 +217,8 @@ workflows:
       #       - create-cluster
       - create-deployment:
           cluster-name: sampleclusters
-          # requires:
-          #   - test-cluster
+          requires:
+             - create-cluster
 
       - undeploy-application:
           cluster-name: sampleclusters
