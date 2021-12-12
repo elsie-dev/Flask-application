@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sampleclusters
+  name: samplecluster
   labels:
-    app: sampleclusters
+    app: samplecluster
   
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: sampleclusters
+      app: samplecluster
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -18,12 +18,12 @@ spec:
   template:
     metadata:
       labels:
-        app: sampleclusters
+        app: samplecluster
     spec:
       containers:
-        - image: greentropikal/covid19-analysis:latest
+        - image: elsiedev/sample:latest
           imagePullPolicy: Always
-          name: sampleclusters
+          name: samplecluster
           ports:
             - containerPort: 80
           resources:
