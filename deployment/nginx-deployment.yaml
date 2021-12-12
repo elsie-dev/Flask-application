@@ -21,7 +21,7 @@ spec:
         app: sampleclusters
     spec:
       containers:
-        - image: elsiedev/sample:latest
+        - image: greentropikal/covid19-analysis:latest
           imagePullPolicy: Always
           name: sampleclusters
           ports:
