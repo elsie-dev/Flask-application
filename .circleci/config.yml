@@ -65,7 +65,7 @@ jobs:
     steps:
          - checkout
          - run: |
-            docker build -t elsiedev/sample:latest .
+            docker build -t elsiedev/my-python-app:latest .
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKER_USER --password-stdin
             docker push elsiedev/sample:latest
 
