@@ -1,5 +1,10 @@
-from pystrich.datamatrix import DataMatrixEncoder
+from flask import Flask
+app = Flask(__name__)
 
-encoder = DataMatrixEncoder('This is a DataMatrix.')
-encoder.save('./datamatrix_test.png')
-print(encoder.get_ascii())
+@app.route("/")
+def hello():
+    return "Hello World!"
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
+
