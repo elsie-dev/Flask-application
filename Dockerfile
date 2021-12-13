@@ -1,8 +1,11 @@
-FROM python:3.8-alpine
-RUN mkdir /app
-ADD . /app
-WORKDIR /app
-RUN pip freeze > requirements.txt
-CMD ["python", "app.py"]
+# build stage
+FROM golang:alpine AS build-env
+ADD src /src
+RUN cd /src && go build -o demo-app main.go
 
-~                  
+# final stage
+FROM alpine
+WORKDIR /app
+COPY --from=build-env /src/demo-app /app/
+EXPOSE 8080
+ENTRYPOINT ./demo-app
