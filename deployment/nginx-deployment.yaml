@@ -21,7 +21,7 @@ spec:
         app: samplecluster
     spec:
       containers:
-        - image: elsiedev/sample:latest
+        - image: elsiedev/my-python-app:latest
           imagePullPolicy: Always
           name: samplecluster
           ports:
