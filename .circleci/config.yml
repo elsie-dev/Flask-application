@@ -67,7 +67,7 @@ jobs:
          - run: |
             docker build -t elsiedev/sample:latest .
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-            docker push elsiedev/sample:latest
+            docker push elsiedev/my-python-app:latest
 
   # Creation of Cluster        
   create-cluster:
