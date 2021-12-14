@@ -2,13 +2,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: sampleclusters
+  name: samplecluster
   labels:
-    app: sampleclusters
+    app: samplecluster
 spec:
   type: LoadBalancer
   selector:
-    app: sampleclusters
+    app: samplecluster
   ports:
     - port: 80
       targetPort: 80
